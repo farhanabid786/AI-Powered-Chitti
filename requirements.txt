@@ -7,5 +7,5 @@ langchain-community
 faiss-cpu
 sentence-transformers
 scikit-learn
-HuggingFaceHub
-OpenAI
+huggingface-hub
+openai
