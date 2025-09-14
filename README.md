@@ -42,10 +42,10 @@ user-friendly chat history interface.
 1.  Clone the repository:
 
     ``` bash
-   git clone https://github.com/your-username/ai-pdf-chatbot.git
+    git clone https://github.com/your-username/ai-pdf-chatbot.git
     cd ai-pdf-chatbot
-    
-   (https://github.com/farhanabid786/AI-Powered-Chitti.git)
+
+    (https://github.com/farhanabid786/AI-Powered-Chitti.git)
     ```
 
 2.  Create a virtual environment and activate it:
