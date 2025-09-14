@@ -1,3 +1,4 @@
+pip==25.2
 streamlit
 python-dotenv
 PyPDF2
