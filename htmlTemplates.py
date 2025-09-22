@@ -217,7 +217,7 @@ body {
 bot_template = '''
 <div class="chat-message bot">
     <div class="avatar">
-        <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="bot">
+        <img src="https://i.postimg.cc/cJ4tvzrT/46387796-274498329873623-253092286630461440-n.jpg" alt="bot">
     </div>
     <div class="message">
         {{MSG}}
@@ -229,7 +229,7 @@ bot_template = '''
 user_template = '''
 <div class="chat-message user">
     <div class="avatar">
-        <img src="https://cdn-icons-png.flaticon.com/512/2202/2202112.png" alt="user">
+        <img src="https://i.postimg.cc/HsDmZ74C/1754987630509.jpg" alt="user">
     </div>
     <div class="message">
         {{MSG}}
@@ -237,5 +237,6 @@ user_template = '''
     </div>
 </div>
 '''
+
 
 
