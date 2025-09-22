@@ -453,145 +453,145 @@
 
 
  ### IMPORTANT
-# import streamlit as st
-# import os
-# from dotenv import load_dotenv
-# from PyPDF2 import PdfReader
-# from langchain.text_splitter import CharacterTextSplitter
-# from langchain_community.embeddings import HuggingFaceEmbeddings
-# from langchain_community.vectorstores import FAISS
-# from langchain.memory import ConversationBufferMemory
-# from langchain.chains import ConversationalRetrievalChain
-# from langchain.llms.base import LLM
-# from langchain.schema import LLMResult
-# from typing import Optional, List
-# from pydantic import BaseModel
-# import requests
+import streamlit as st
+import os
+from dotenv import load_dotenv
+from PyPDF2 import PdfReader
+from langchain.text_splitter import CharacterTextSplitter
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain.memory import ConversationBufferMemory
+from langchain.chains import ConversationalRetrievalChain
+from langchain.llms.base import LLM
+from langchain.schema import LLMResult
+from typing import Optional, List
+from pydantic import BaseModel
+import requests
 
-# from htmlTemplates import css, bot_template, user_template
+from htmlTemplates import css, bot_template, user_template
 
-# class NvidiaLlamaMaverickLLM(LLM, BaseModel):
-#     api_key: str
+class NvidiaLlamaMaverickLLM(LLM, BaseModel):
+    api_key: str
 
-#     class Config:
-#         arbitrary_types_allowed = True
+    class Config:
+        arbitrary_types_allowed = True
 
-#     @property
-#     def _llm_type(self) -> str:
-#         return "nvidia_llama_maverick"
+    @property
+    def _llm_type(self) -> str:
+        return "nvidia_llama_maverick"
 
-#     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-#         headers = {"Authorization": f"Bearer {self.api_key}", "Accept": "application/json"}
-#         payload = {
-#             "model": "meta/llama-4-maverick-17b-128e-instruct",
-#             "messages": [{"role": "user", "content": prompt}],
-#             "max_tokens": 512,
-#             "temperature": 1.0,
-#             "top_p": 1.0,
-#             "frequency_penalty": 0.0,
-#             "presence_penalty": 0.0,
-#             "stream": False
-#         }
-#         response = requests.post(
-#             "https://integrate.api.nvidia.com/v1/chat/completions",
-#             headers=headers,
-#             json=payload
-#         )
-#         response.raise_for_status()
-#         result = response.json()
-#         return result['choices'][0]['message']['content']
+    def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
+        headers = {"Authorization": f"Bearer {self.api_key}", "Accept": "application/json"}
+        payload = {
+            "model": "meta/llama-4-maverick-17b-128e-instruct",
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 512,
+            "temperature": 1.0,
+            "top_p": 1.0,
+            "frequency_penalty": 0.0,
+            "presence_penalty": 0.0,
+            "stream": False
+        }
+        response = requests.post(
+            "https://integrate.api.nvidia.com/v1/chat/completions",
+            headers=headers,
+            json=payload
+        )
+        response.raise_for_status()
+        result = response.json()
+        return result['choices'][0]['message']['content']
 
-#     def _generate(self, prompts: List[str], stop: Optional[List[str]] = None) -> LLMResult:
-#         generations = []
-#         for prompt in prompts:
-#             text = self._call(prompt, stop=stop)
-#             generations.append([{"text": text}])
-#         return LLMResult(generations=generations)
+    def _generate(self, prompts: List[str], stop: Optional[List[str]] = None) -> LLMResult:
+        generations = []
+        for prompt in prompts:
+            text = self._call(prompt, stop=stop)
+            generations.append([{"text": text}])
+        return LLMResult(generations=generations)
 
-# def get_pdf_text(pdf_docs):
-#     text = ""
-#     for pdf in pdf_docs:
-#         pdf_reader = PdfReader(pdf)
-#         for page in pdf_reader.pages:
-#             text += page.extract_text() + "\n"
-#     return text
+def get_pdf_text(pdf_docs):
+    text = ""
+    for pdf in pdf_docs:
+        pdf_reader = PdfReader(pdf)
+        for page in pdf_reader.pages:
+            text += page.extract_text() + "\n"
+    return text
 
-# def get_text_chunks(text):
-#     text_splitter = CharacterTextSplitter(
-#         separator="\n",
-#         chunk_size=1000,
-#         chunk_overlap=200,
-#         length_function=len
-#     )
-#     return text_splitter.split_text(text)
+def get_text_chunks(text):
+    text_splitter = CharacterTextSplitter(
+        separator="\n",
+        chunk_size=1000,
+        chunk_overlap=200,
+        length_function=len
+    )
+    return text_splitter.split_text(text)
 
-# def get_vectorstore(text_chunks):
-#     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-#     return FAISS.from_texts(texts=text_chunks, embedding=embeddings)
+def get_vectorstore(text_chunks):
+    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    return FAISS.from_texts(texts=text_chunks, embedding=embeddings)
 
-# def get_conversation_chain(vectorstore):
-#     llm = NvidiaLlamaMaverickLLM(api_key=os.getenv("NVIDIA_API_KEY"))
-#     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-#     return ConversationalRetrievalChain.from_llm(
-#         llm=llm,
-#         retriever=vectorstore.as_retriever(),
-#         memory=memory
-#     )
+def get_conversation_chain(vectorstore):
+    llm = NvidiaLlamaMaverickLLM(api_key=os.getenv("NVIDIA_API_KEY"))
+    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+    return ConversationalRetrievalChain.from_llm(
+        llm=llm,
+        retriever=vectorstore.as_retriever(),
+        memory=memory
+    )
 
-# def handle_userinput(user_question):
-#     if st.session_state.conversation is not None:
-#         result = st.session_state.conversation({'question': user_question})
-#         response = result['answer']
-#         st.session_state.chat_history.append({
-#             "user": user_question,
-#             "bot": response
-#         })
+def handle_userinput(user_question):
+    if st.session_state.conversation is not None:
+        result = st.session_state.conversation({'question': user_question})
+        response = result['answer']
+        st.session_state.chat_history.append({
+            "user": user_question,
+            "bot": response
+        })
 
-# def render_chat_history():
-#     st.markdown('<div style="max-height: 500px; overflow-y: auto; padding:10px;">', unsafe_allow_html=True)
-#     for chat in st.session_state.chat_history:
-#         st.markdown(user_template.replace("{{MSG}}", chat['user']), unsafe_allow_html=True)
-#         st.markdown(bot_template.replace("{{MSG}}", chat['bot']), unsafe_allow_html=True)
-#     st.markdown('</div>', unsafe_allow_html=True)
+def render_chat_history():
+    st.markdown('<div style="max-height: 500px; overflow-y: auto; padding:10px;">', unsafe_allow_html=True)
+    for chat in st.session_state.chat_history:
+        st.markdown(user_template.replace("{{MSG}}", chat['user']), unsafe_allow_html=True)
+        st.markdown(bot_template.replace("{{MSG}}", chat['bot']), unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# def main():
-#     load_dotenv()
-#     st.set_page_config(page_title="AI Powered Chitti", page_icon=":robot:", layout="wide")
-#     st.markdown(css, unsafe_allow_html=True)
+def main():
+    load_dotenv()
+    st.set_page_config(page_title="AI Powered Chitti", page_icon=":robot:", layout="wide")
+    st.markdown(css, unsafe_allow_html=True)
 
-#     if "conversation" not in st.session_state:
-#         st.session_state.conversation = None
-#     if "chat_history" not in st.session_state:
-#         st.session_state.chat_history = []
+    if "conversation" not in st.session_state:
+        st.session_state.conversation = None
+    if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []
 
-#     with st.sidebar:
-#         st.subheader("Upload Your PDFs")
-#         pdf_docs = st.file_uploader("Upload PDFs", accept_multiple_files=True)
-#         if st.button("Process PDFs"):
-#             if pdf_docs:
-#                 with st.spinner("Processing PDFs..."):
-#                     raw_text = get_pdf_text(pdf_docs)
-#                     text_chunks = get_text_chunks(raw_text)
-#                     vectorstore = get_vectorstore(text_chunks)
-#                     st.session_state.conversation = get_conversation_chain(vectorstore)
-#                     st.success("PDFs processed successfully!")
-#             else:
-#                 st.warning("Please upload at least one PDF.")
+    with st.sidebar:
+        st.subheader("Upload Your PDFs")
+        pdf_docs = st.file_uploader("Upload PDFs", accept_multiple_files=True)
+        if st.button("Process PDFs"):
+            if pdf_docs:
+                with st.spinner("Processing PDFs..."):
+                    raw_text = get_pdf_text(pdf_docs)
+                    text_chunks = get_text_chunks(raw_text)
+                    vectorstore = get_vectorstore(text_chunks)
+                    st.session_state.conversation = get_conversation_chain(vectorstore)
+                    st.success("PDFs processed successfully!")
+            else:
+                st.warning("Please upload at least one PDF.")
 
-#     st.title("📄 Multiple PDFs AI Powered Chitti 🤖")
-#     st.subheader("Ask questions about your uploaded documents")
+    st.title("📄 Multiple PDFs AI Powered Chitti 🤖")
+    st.subheader("Ask questions about your uploaded documents")
 
-#     user_question = st.text_input("Type your question here:")
-#     if user_question and st.session_state.conversation is not None:
-#         handle_userinput(user_question)
+    user_question = st.text_input("Type your question here:")
+    if user_question and st.session_state.conversation is not None:
+        handle_userinput(user_question)
 
-#     if not st.session_state.chat_history:
-#         st.markdown(bot_template.replace("{{MSG}}", "Hello! Upload PDFs and ask me anything."), unsafe_allow_html=True)
-#     else:
-#         render_chat_history()
+    if not st.session_state.chat_history:
+        st.markdown(bot_template.replace("{{MSG}}", "Hello! Upload PDFs and ask me anything."), unsafe_allow_html=True)
+    else:
+        render_chat_history()
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
 
 # import streamlit as st
 # import os
@@ -743,175 +743,176 @@
 
 # if __name__ == "__main__":
 #     main()
-import streamlit as st
-import os
-from dotenv import load_dotenv
-from PyPDF2 import PdfReader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain.memory import ConversationBufferMemory
-from langchain.chains import ConversationalRetrievalChain
-from langchain.llms.base import LLM
-from langchain.schema import LLMResult
-from typing import Optional, List
-from pydantic import BaseModel
-import requests
+# import streamlit as st
+# import os
+# from dotenv import load_dotenv
+# from PyPDF2 import PdfReader
+# from langchain.text_splitter import CharacterTextSplitter
+# from langchain_community.embeddings import HuggingFaceEmbeddings
+# from langchain_community.vectorstores import FAISS
+# from langchain.memory import ConversationBufferMemory
+# from langchain.chains import ConversationalRetrievalChain
+# from langchain.llms.base import LLM
+# from langchain.schema import LLMResult
+# from typing import Optional, List
+# from pydantic import BaseModel
+# import requests
 
-from htmlTemplates import css, bot_template, user_template
+# from htmlTemplates import css, bot_template, user_template
 
-# -------------------------------
-# Set Hugging Face token from Streamlit secrets
-# -------------------------------
-os.environ["HUGGINGFACEHUB_API_TOKEN"] = st.secrets["HUGGINGFACE_API_TOKEN"]
+# # -------------------------------
+# # Set Hugging Face token from Streamlit secrets
+# # -------------------------------
+# os.environ["HUGGINGFACEHUB_API_TOKEN"] = st.secrets["HUGGINGFACE_API_TOKEN"]
 
-# -------------------------------
-# Cache embeddings to avoid repeated downloads
-# -------------------------------
-@st.cache_resource
-def get_embeddings():
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+# # -------------------------------
+# # Cache embeddings to avoid repeated downloads
+# # -------------------------------
+# @st.cache_resource
+# def get_embeddings():
+#     return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-# -------------------------------
-# Custom LLM for Nvidia Llama
-# -------------------------------
-class NvidiaLlamaMaverickLLM(LLM, BaseModel):
-    api_key: str
+# # -------------------------------
+# # Custom LLM for Nvidia Llama
+# # -------------------------------
+# class NvidiaLlamaMaverickLLM(LLM, BaseModel):
+#     api_key: str
 
-    class Config:
-        arbitrary_types_allowed = True
+#     class Config:
+#         arbitrary_types_allowed = True
 
-    @property
-    def _llm_type(self) -> str:
-        return "nvidia_llama_maverick"
+#     @property
+#     def _llm_type(self) -> str:
+#         return "nvidia_llama_maverick"
 
-    def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-        headers = {"Authorization": f"Bearer {self.api_key}", "Accept": "application/json"}
-        payload = {
-            "model": "meta/llama-4-maverick-17b-128e-instruct",
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 512,
-            "temperature": 1.0,
-            "top_p": 1.0,
-            "frequency_penalty": 0.0,
-            "presence_penalty": 0.0,
-            "stream": False
-        }
-        response = requests.post(
-            "https://integrate.api.nvidia.com/v1/chat/completions",
-            headers=headers,
-            json=payload
-        )
-        response.raise_for_status()
-        result = response.json()
-        return result['choices'][0]['message']['content']
+#     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
+#         headers = {"Authorization": f"Bearer {self.api_key}", "Accept": "application/json"}
+#         payload = {
+#             "model": "meta/llama-4-maverick-17b-128e-instruct",
+#             "messages": [{"role": "user", "content": prompt}],
+#             "max_tokens": 512,
+#             "temperature": 1.0,
+#             "top_p": 1.0,
+#             "frequency_penalty": 0.0,
+#             "presence_penalty": 0.0,
+#             "stream": False
+#         }
+#         response = requests.post(
+#             "https://integrate.api.nvidia.com/v1/chat/completions",
+#             headers=headers,
+#             json=payload
+#         )
+#         response.raise_for_status()
+#         result = response.json()
+#         return result['choices'][0]['message']['content']
 
-    def _generate(self, prompts: List[str], stop: Optional[List[str]] = None) -> LLMResult:
-        generations = []
-        for prompt in prompts:
-            text = self._call(prompt, stop=stop)
-            generations.append([{"text": text}])
-        return LLMResult(generations=generations)
+#     def _generate(self, prompts: List[str], stop: Optional[List[str]] = None) -> LLMResult:
+#         generations = []
+#         for prompt in prompts:
+#             text = self._call(prompt, stop=stop)
+#             generations.append([{"text": text}])
+#         return LLMResult(generations=generations)
 
-# -------------------------------
-# PDF processing
-# -------------------------------
-def get_pdf_text(pdf_docs):
-    text = ""
-    for pdf in pdf_docs:
-        pdf_reader = PdfReader(pdf)
-        for page in pdf_reader.pages:
-            text += page.extract_text() + "\n"
-    return text
+# # -------------------------------
+# # PDF processing
+# # -------------------------------
+# def get_pdf_text(pdf_docs):
+#     text = ""
+#     for pdf in pdf_docs:
+#         pdf_reader = PdfReader(pdf)
+#         for page in pdf_reader.pages:
+#             text += page.extract_text() + "\n"
+#     return text
 
-def get_text_chunks(text):
-    text_splitter = CharacterTextSplitter(
-        separator="\n",
-        chunk_size=1000,
-        chunk_overlap=200,
-        length_function=len
-    )
-    return text_splitter.split_text(text)
+# def get_text_chunks(text):
+#     text_splitter = CharacterTextSplitter(
+#         separator="\n",
+#         chunk_size=1000,
+#         chunk_overlap=200,
+#         length_function=len
+#     )
+#     return text_splitter.split_text(text)
 
-# -------------------------------
-# Vectorstore using cached embeddings
-# -------------------------------
-def get_vectorstore(text_chunks):
-    embeddings = get_embeddings()  # cached embeddings
-    return FAISS.from_texts(texts=text_chunks, embedding=embeddings)
+# # -------------------------------
+# # Vectorstore using cached embeddings
+# # -------------------------------
+# def get_vectorstore(text_chunks):
+#     embeddings = get_embeddings()  # cached embeddings
+#     return FAISS.from_texts(texts=text_chunks, embedding=embeddings)
 
-# -------------------------------
-# Conversation chain
-# -------------------------------
-def get_conversation_chain(vectorstore):
-    llm = NvidiaLlamaMaverickLLM(api_key=os.getenv("NVIDIA_API_KEY"))
-    memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
-    return ConversationalRetrievalChain.from_llm(
-        llm=llm,
-        retriever=vectorstore.as_retriever(),
-        memory=memory
-    )
+# # -------------------------------
+# # Conversation chain
+# # -------------------------------
+# def get_conversation_chain(vectorstore):
+#     llm = NvidiaLlamaMaverickLLM(api_key=os.getenv("NVIDIA_API_KEY"))
+#     memory = ConversationBufferMemory(memory_key='chat_history', return_messages=True)
+#     return ConversationalRetrievalChain.from_llm(
+#         llm=llm,
+#         retriever=vectorstore.as_retriever(),
+#         memory=memory
+#     )
 
-# -------------------------------
-# Chat handlers
-# -------------------------------
-def handle_userinput(user_question):
-    if st.session_state.conversation is not None:
-        result = st.session_state.conversation({'question': user_question})
-        response = result['answer']
-        st.session_state.chat_history.append({
-            "user": user_question,
-            "bot": response
-        })
+# # -------------------------------
+# # Chat handlers
+# # -------------------------------
+# def handle_userinput(user_question):
+#     if st.session_state.conversation is not None:
+#         result = st.session_state.conversation({'question': user_question})
+#         response = result['answer']
+#         st.session_state.chat_history.append({
+#             "user": user_question,
+#             "bot": response
+#         })
 
-def render_chat_history():
-    st.markdown('<div style="max-height: 500px; overflow-y: auto; padding:10px;">', unsafe_allow_html=True)
-    for chat in st.session_state.chat_history:
-        st.markdown(user_template.replace("{{MSG}}", chat['user']), unsafe_allow_html=True)
-        st.markdown(bot_template.replace("{{MSG}}", chat['bot']), unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+# def render_chat_history():
+#     st.markdown('<div style="max-height: 500px; overflow-y: auto; padding:10px;">', unsafe_allow_html=True)
+#     for chat in st.session_state.chat_history:
+#         st.markdown(user_template.replace("{{MSG}}", chat['user']), unsafe_allow_html=True)
+#         st.markdown(bot_template.replace("{{MSG}}", chat['bot']), unsafe_allow_html=True)
+#     st.markdown('</div>', unsafe_allow_html=True)
 
-# -------------------------------
-# Main Streamlit app
-# -------------------------------
-def main():
-    load_dotenv()
-    st.set_page_config(page_title="AI Powered Chitti", page_icon=":robot:", layout="wide")
-    st.markdown(css, unsafe_allow_html=True)
+# # -------------------------------
+# # Main Streamlit app
+# # -------------------------------
+# def main():
+#     load_dotenv()
+#     st.set_page_config(page_title="AI Powered Chitti", page_icon=":robot:", layout="wide")
+#     st.markdown(css, unsafe_allow_html=True)
 
-    if "conversation" not in st.session_state:
-        st.session_state.conversation = None
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []
+#     if "conversation" not in st.session_state:
+#         st.session_state.conversation = None
+#     if "chat_history" not in st.session_state:
+#         st.session_state.chat_history = []
 
-    with st.sidebar:
-        st.subheader("Upload Your PDFs")
-        pdf_docs = st.file_uploader("Upload PDFs", accept_multiple_files=True)
-        if st.button("Process PDFs"):
-            if pdf_docs:
-                with st.spinner("Processing PDFs..."):
-                    raw_text = get_pdf_text(pdf_docs)
-                    text_chunks = get_text_chunks(raw_text)
-                    vectorstore = get_vectorstore(text_chunks)
-                    st.session_state.conversation = get_conversation_chain(vectorstore)
-                    st.success("PDFs processed successfully!")
-            else:
-                st.warning("Please upload at least one PDF.")
+#     with st.sidebar:
+#         st.subheader("Upload Your PDFs")
+#         pdf_docs = st.file_uploader("Upload PDFs", accept_multiple_files=True)
+#         if st.button("Process PDFs"):
+#             if pdf_docs:
+#                 with st.spinner("Processing PDFs..."):
+#                     raw_text = get_pdf_text(pdf_docs)
+#                     text_chunks = get_text_chunks(raw_text)
+#                     vectorstore = get_vectorstore(text_chunks)
+#                     st.session_state.conversation = get_conversation_chain(vectorstore)
+#                     st.success("PDFs processed successfully!")
+#             else:
+#                 st.warning("Please upload at least one PDF.")
 
-    st.title("📄 Multiple PDFs AI Powered Chitti 🤖")
-    st.subheader("Ask questions about your uploaded documents")
+#     st.title("📄 Multiple PDFs AI Powered Chitti 🤖")
+#     st.subheader("Ask questions about your uploaded documents")
 
-    user_question = st.text_input("Type your question here:")
-    if user_question and st.session_state.conversation is not None:
-        handle_userinput(user_question)
+#     user_question = st.text_input("Type your question here:")
+#     if user_question and st.session_state.conversation is not None:
+#         handle_userinput(user_question)
 
-    if not st.session_state.chat_history:
-        st.markdown(bot_template.replace("{{MSG}}", "Hello! Upload PDFs and ask me anything."), unsafe_allow_html=True)
-    else:
-        render_chat_history()
+#     if not st.session_state.chat_history:
+#         st.markdown(bot_template.replace("{{MSG}}", "Hello! Upload PDFs and ask me anything."), unsafe_allow_html=True)
+#     else:
+#         render_chat_history()
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
+
 
 
 
