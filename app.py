@@ -627,9 +627,16 @@ def get_text_chunks(text):
     return splitter.split_text(text)
 
 
+# def get_vectorstore(text_chunks):
+#     embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+#     return FAISS.from_texts(text_chunks, embedding=embeddings)
 def get_vectorstore(text_chunks):
-    embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    embeddings = HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={"device": "cpu"}   # 👈 Force CPU
+    )
     return FAISS.from_texts(text_chunks, embedding=embeddings)
+
 
 
 def get_conversation_chain(vectorstore):
@@ -734,3 +741,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
