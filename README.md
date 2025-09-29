@@ -1,4 +1,4 @@
-# 📚 AI-Powered Multiple PDFs Chatbot 🤖
+# 📚 AI-Powered Chitti 🤖
 
 An interactive web-based chatbot built using **Streamlit**,
 **Langchain**, and **Nvidia Llama Maverick API** that allows users to
