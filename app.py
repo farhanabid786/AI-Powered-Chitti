@@ -314,15 +314,29 @@ from langchain_text_splitters import CharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 # from langchain.memory import ConversationBufferMemory
-from langchain_community.chat_message_histories import ChatMessageHistory
+# from langchain_community.chat_message_histories import ChatMessageHistory
 # from langchain_core.memory import ConversationBufferMemory
-from langchain_community.memory import ConversationBufferMemory
+# from langchain_community.memory import ConversationBufferMemory
+try:
+    from langchain_community.memory import ConversationBufferMemory
+except ImportError:
+    try:
+        from langchain.memory import ConversationBufferMemory
+    except ImportError:
+        ConversationBufferMemory = None
+        print("⚠️ ConversationBufferMemory not available on this Python version.")
+if ConversationBufferMemory is None:
+    st.error("Conversation memory not supported in Python 3.13 yet. Please downgrade to 3.11.")
+    st.stop()
+
+
 from langchain.chains import ConversationalRetrievalChain
 from langchain.llms.base import LLM
 from langchain.schema import LLMResult
 from typing import Optional, List
 from pydantic import BaseModel
 import requests
+
 
 from htmlTemplates import css, bot_template, user_template
 
@@ -916,6 +930,7 @@ if __name__ == '__main__':
 
 # if __name__ == '__main__':
 #     main()
+
 
 
 
