@@ -313,21 +313,21 @@ from PyPDF2 import PdfReader
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-# from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferMemory
 # from langchain_community.chat_message_histories import ChatMessageHistory
 # from langchain_core.memory import ConversationBufferMemory
 # from langchain_community.memory import ConversationBufferMemory
-try:
-    from langchain_community.memory import ConversationBufferMemory
-except ImportError:
-    try:
-        from langchain.memory import ConversationBufferMemory
-    except ImportError:
-        ConversationBufferMemory = None
-        print("⚠️ ConversationBufferMemory not available on this Python version.")
-if ConversationBufferMemory is None:
-    st.error("Conversation memory not supported in Python 3.13 yet. Please downgrade to 3.11.")
-    st.stop()
+# try:
+#     from langchain_community.memory import ConversationBufferMemory
+# except ImportError:
+#     try:
+#         from langchain.memory import ConversationBufferMemory
+#     except ImportError:
+#         ConversationBufferMemory = None
+#         print("⚠️ ConversationBufferMemory not available on this Python version.")
+# if ConversationBufferMemory is None:
+#     st.error("Conversation memory not supported in Python 3.13 yet. Please downgrade to 3.11.")
+#     st.stop()
 
 
 from langchain.chains import ConversationalRetrievalChain
