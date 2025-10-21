@@ -329,10 +329,17 @@ from langchain_community.vectorstores import FAISS
 #     st.error("Conversation memory not supported in Python 3.13 yet. Please downgrade to 3.11.")
 #     st.stop()
 
+# --- Memory import compatibility fix ---
 try:
-    from langchain_community.memory import ConversationBufferMemory
+    # Newer versions (LangChain >= 0.3.0)
+    from langchain.memory.buffer import ConversationBufferMemory
 except ImportError:
-    from langchain.memory import ConversationBufferMemory
+    try:
+        # Mid-range versions (LangChain 0.2.x)
+        from langchain_community.memory import ConversationBufferMemory
+    except ImportError:
+        # Older versions (LangChain <= 0.1.x)
+        from langchain.memory import ConversationBufferMemory
 
 from langchain.chains import ConversationalRetrievalChain
 from langchain.llms.base import LLM
@@ -934,6 +941,7 @@ if __name__ == '__main__':
 
 # if __name__ == '__main__':
 #     main()
+
 
 
 
