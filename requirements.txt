@@ -11,3 +11,4 @@ huggingface-hub
 openai
 langchain-text-splitters
 langchain-core
+tiktoken
