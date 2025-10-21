@@ -9,3 +9,4 @@ sentence-transformers
 scikit-learn
 huggingface-hub
 openai
+langchain-text-splitters
