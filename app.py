@@ -330,16 +330,23 @@ from langchain_community.vectorstores import FAISS
 #     st.stop()
 
 # --- Memory import compatibility fix ---
+# try:
+#     # Newer versions (LangChain >= 0.3.0)
+#     from langchain.memory.buffer import ConversationBufferMemory
+# except ImportError:
+#     try:
+#         # Mid-range versions (LangChain 0.2.x)
+#         from langchain_community.memory import ConversationBufferMemory
+#     except ImportError:
+#         # Older versions (LangChain <= 0.1.x)
+#         from langchain.memory import ConversationBufferMemory
+
+# --- Memory import compatibility fix ---
 try:
-    # Newer versions (LangChain >= 0.3.0)
-    from langchain.memory.buffer import ConversationBufferMemory
+    from langchain.memory import ConversationBufferMemory
 except ImportError:
-    try:
-        # Mid-range versions (LangChain 0.2.x)
-        from langchain_community.memory import ConversationBufferMemory
-    except ImportError:
-        # Older versions (LangChain <= 0.1.x)
-        from langchain.memory import ConversationBufferMemory
+    from langchain.memory.buffer import ConversationBufferMemory
+
 
 from langchain.chains import ConversationalRetrievalChain
 from langchain.llms.base import LLM
@@ -941,6 +948,7 @@ if __name__ == '__main__':
 
 # if __name__ == '__main__':
 #     main()
+
 
 
 
