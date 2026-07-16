@@ -124,4 +124,4 @@ improve the chatbot experience.
 
 ## 💬 Contact
 
-Created by [Farhan](https://github.com/farhanabid786)
+Created by [Farhan Abid](https://github.com/farhanabid786)
