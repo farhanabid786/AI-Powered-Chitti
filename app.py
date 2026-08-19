@@ -4,8 +4,9 @@ import streamlit as st
 from dotenv import load_dotenv
 from openai import OpenAI
 from PyPDF2 import PdfReader
+
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 
 from htmlTemplates import css, bot_template, user_template
@@ -68,8 +69,7 @@ def get_nvidia_client():
 
     if not api_key:
         raise ValueError(
-            "NVIDIA_API_KEY is not configured. "
-            "Add it to your .env file."
+            "NVIDIA_API_KEY is missing. Add it to your .env file."
         )
 
     return OpenAI(
@@ -85,12 +85,15 @@ def ask_nvidia(question, context, chat_history):
         {
             "role": "system",
             "content": (
-                "You are Chitti, an AI assistant for answering questions "
-                "about uploaded PDF documents. Use the provided document "
-                "context as the primary source of truth. Do not invent facts "
-                "or citations. If the answer is not present in the provided "
-                "context, clearly say that you could not find the information "
-                "in the uploaded documents. Give clear, direct answers."
+                "You are Chitti, an AI assistant that answers questions "
+                "about uploaded PDF documents. "
+                "Use the supplied document context as the primary source "
+                "of truth. "
+                "Do not invent facts or information. "
+                "If the answer cannot be found in the supplied document "
+                "context, clearly say that the information could not be "
+                "found in the uploaded documents. "
+                "Answer clearly and directly."
             )
         }
     ]
@@ -103,7 +106,7 @@ def ask_nvidia(question, context, chat_history):
             }
         )
 
-    prompt = f"""
+    current_prompt = f"""
 Document context:
 
 {context}
@@ -112,17 +115,17 @@ Current user question:
 
 {question}
 
-Answer the current question using the document context.
+Answer the question using the document context.
 
-If the context does not contain enough information to answer the question,
-say clearly that the information could not be found in the uploaded
-documents.
+If the document context does not contain enough information to answer
+the question, say that the information could not be found in the
+uploaded documents.
 """
 
     messages.append(
         {
             "role": "user",
-            "content": prompt
+            "content": current_prompt
         }
     )
 
@@ -230,7 +233,7 @@ def render_chat_history():
                 ),
                 unsafe_allow_html=True
             )
-        else:
+        elif message["role"] == "assistant":
             st.markdown(
                 bot_template.replace(
                     "{{MSG}}",
@@ -285,6 +288,12 @@ def main():
                         raw_text = get_pdf_text(
                             pdf_docs
                         )
+
+                        if not raw_text.strip():
+                            raise ValueError(
+                                "No readable text was extracted "
+                                "from the uploaded PDFs."
+                            )
 
                         text_chunks = get_text_chunks(
                             raw_text
