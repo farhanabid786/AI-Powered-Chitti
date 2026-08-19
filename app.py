@@ -69,7 +69,7 @@ def get_nvidia_client():
 
     if not api_key:
         raise ValueError(
-            "NVIDIA_API_KEY is missing. Add it to your .env file."
+            "NVIDIA_API_KEY is missing."
         )
 
     return OpenAI(
@@ -85,14 +85,14 @@ def ask_nvidia(question, context, chat_history):
         {
             "role": "system",
             "content": (
-                "You are Chitti, an AI assistant that answers questions "
-                "about uploaded PDF documents. "
-                "Use the supplied document context as the primary source "
-                "of truth. "
-                "Do not invent facts or information. "
-                "If the answer cannot be found in the supplied document "
-                "context, clearly say that the information could not be "
-                "found in the uploaded documents. "
+                "You are Chitti, an AI assistant for answering "
+                "questions about uploaded PDF documents. "
+                "Use the supplied document context as your primary "
+                "source of truth. "
+                "Do not invent facts. "
+                "If the answer cannot be found in the document "
+                "context, clearly say that the information could "
+                "not be found in the uploaded documents. "
                 "Answer clearly and directly."
             )
         }
@@ -117,9 +117,9 @@ Current user question:
 
 Answer the question using the document context.
 
-If the document context does not contain enough information to answer
-the question, say that the information could not be found in the
-uploaded documents.
+If the document context does not contain enough information,
+say that the information could not be found in the uploaded
+documents.
 """
 
     messages.append(
@@ -174,39 +174,25 @@ def handle_userinput(user_question):
     documents = retriever.invoke(user_question)
 
     if not documents:
-        st.session_state.chat_history.append(
-            {
-                "role": "user",
-                "content": user_question
-            }
+        answer = (
+            "I couldn't find relevant information "
+            "in the uploaded documents."
+        )
+    else:
+        context = "\n\n".join(
+            document.page_content
+            for document in documents
         )
 
-        st.session_state.chat_history.append(
-            {
-                "role": "assistant",
-                "content": (
-                    "I couldn't find relevant information "
-                    "in the uploaded documents."
-                )
-            }
+        previous_history = list(
+            st.session_state.chat_history
         )
 
-        return
-
-    context = "\n\n".join(
-        document.page_content
-        for document in documents
-    )
-
-    previous_history = list(
-        st.session_state.chat_history
-    )
-
-    answer = ask_nvidia(
-        question=user_question,
-        context=context,
-        chat_history=previous_history
-    )
+        answer = ask_nvidia(
+            question=user_question,
+            context=context,
+            chat_history=previous_history
+        )
 
     st.session_state.chat_history.append(
         {
@@ -225,6 +211,7 @@ def handle_userinput(user_question):
 
 def render_chat_history():
     for message in st.session_state.chat_history:
+
         if message["role"] == "user":
             st.markdown(
                 user_template.replace(
@@ -233,6 +220,7 @@ def render_chat_history():
                 ),
                 unsafe_allow_html=True
             )
+
         elif message["role"] == "assistant":
             st.markdown(
                 bot_template.replace(
@@ -264,6 +252,7 @@ def main():
         st.session_state.chat_history = []
 
     with st.sidebar:
+
         st.subheader("Upload Your PDFs")
 
         pdf_docs = st.file_uploader(
@@ -276,15 +265,20 @@ def main():
             "Process PDFs",
             use_container_width=True
         ):
+
             if not pdf_docs:
                 st.warning(
                     "Please upload at least one PDF."
                 )
+
             else:
+
                 try:
+
                     with st.spinner(
                         "Processing PDFs..."
                     ):
+
                         raw_text = get_pdf_text(
                             pdf_docs
                         )
@@ -314,6 +308,7 @@ def main():
                     )
 
                 except Exception as error:
+
                     st.error(
                         f"PDF processing failed: {error}"
                     )
@@ -327,6 +322,7 @@ def main():
     )
 
     if st.session_state.vectorstore is None:
+
         st.markdown(
             bot_template.replace(
                 "{{MSG}}",
@@ -334,7 +330,9 @@ def main():
             ),
             unsafe_allow_html=True
         )
+
     else:
+
         render_chat_history()
 
     user_question = st.chat_input(
@@ -342,14 +340,19 @@ def main():
     )
 
     if user_question:
+
         with st.spinner(
             "Chitti is thinking..."
         ):
+
             try:
+
                 handle_userinput(
                     user_question
                 )
+
             except Exception as error:
+
                 st.error(
                     f"Unable to generate an answer: {error}"
                 )
