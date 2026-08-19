@@ -2,7 +2,7 @@ pip==25.2
 scikit-learn
 openai
 streamlit
-langchain
+langchain<1.0
 langchain-core
 langchain-community
 langchain-text-splitters
